@@ -1,0 +1,324 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Minecraft overviewer instance",
+
+  "Parameters": {
+    "VpcId": {
+      "Type": "String",
+      "Description": "The VPC to deploy the instance in",
+      "AllowedPattern": "^vpc-[a-f0-9]{8}+$",
+      "ConstraintDescription": "Must be a valid VPC ID"
+    },
+    "InstanceType": {
+      "Type": "String",
+      "Description": "The size of the instance to use",
+      "AllowedValues": [
+        "c3.large", "c3.xlarge", "r3.large", "r3.xlarge"
+      ],
+      "Default": "c3.large"
+    },
+    "SSHKeyName": {
+      "Type": "String",
+      "Description": "The name of the pre-generated SSH keypair"
+    },
+    "SpotBidPrice": {
+      "Type": "String",
+      "Description": "How much (max) to pay per instance-hour",
+      "AllowedPattern": "^[0-9]+\\.[0-9][0-9]",
+      "ConstraintDescription": "Must be a floating-point number, 2 decimal places",
+      "Default": "0.02"
+    },
+    "SubnetA": {
+      "Type": "String",
+      "Description": "The first subnet to provision the ASG across",
+      "AllowedPattern": "^subnet-[a-f0-9]{8}$",
+      "ConstraintDescription": "Must be a valid subnet ID"
+    },
+    "SubnetB": {
+      "Type": "String",
+      "Description": "The second subnet to provision the ASG across",
+      "AllowedPattern": "^subnet-[a-f0-9]{8}$",
+      "ConstraintDescription": "Must be a valid subnet ID"
+    },
+    "FTPUser": {
+      "Type": "String",
+      "Description": "FTP username for mirroring tiles"
+    },
+    "FTPPass": {
+      "Type": "String",
+      "Description": "FTP password for mirroring tiles"
+    },
+    "MinecraftServer": {
+      "Type": "String",
+      "Description": "The host to retrieve tiles from"
+    }
+  },
+
+  "Mappings": {
+    "RegionMapping": {
+      "ap-northeast-1": {
+        "hvm": "ami-29dc9228",
+        "pv": "ami-25dd9324"
+      },
+      "ap-southeast-1": {
+        "hvm": "ami-a6b6eaf4",
+        "pv": "ami-56b7eb04"
+      },
+      "ap-southeast-2": {
+        "hvm": "ami-d9fe9be3",
+        "pv": "ami-6bf99c51"
+      },
+      "eu-west-1": {
+        "hvm": "ami-892fe1fe",
+        "pv": "ami-672ce210"
+      },
+      "us-west-1": {
+        "hvm": "ami-f0d3d4b5",
+        "pv": "ami-a8d3d4ed"
+      },
+      "us-west-1": {
+        "hvm": "ami-d13845e1",
+        "pv": "ami-1b3b462b"
+      },
+      "us-east-1": {
+        "hvm": "ami-76817c1e",
+        "pv": "ami-7c807d14"
+      }
+    }
+  },
+
+  "Resources": {
+    "OverviewerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Inbound ICMP, SSH and HTTP",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "-1",
+            "ToPort": "-1",
+            "IpProtocol": "icmp"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "22",
+            "ToPort": "22",
+            "IpProtocol": "tcp"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "ToPort": "80",
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+
+    "OverviewerLaunchConfiguration": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "default": [ "prep", "download", "configure" ]
+          },
+          "prep": {
+            "files": {
+              "/etc/yum.repos.d/overviewer.repo": {
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "[overviewer]",
+                      "name = Minecraft-Overviewer - $releasever - $basearch",
+                      "baseurl=http://overviewer.org/rpms/6/$basearch",
+                      "gpgcheck=0",
+                      "enabled=1",
+                      ""
+                    ]
+                  ]
+                },
+                "mode": "0644",
+                "owner": "root",
+                "group": "root"
+              }
+            },
+            "commands": {
+              "00_mkfs": {
+                "command": "/sbin/mkfs.ext4 -L overviewer -j /dev/sdc",
+                "test": "/usr/bin/file -sL /dev/sdc | /bin/grep -v ext4"
+              },
+              "01_mkdir": {
+                "command": "/bin/mkdir -p /persistent"
+              },
+              "02_append_mount": {
+                "command": "echo LABEL=overviewer /persistent ext4 defaults 0 0 >>/etc/fstab",
+                "test": "/bin/grep -v overviewer /etc/fstab >/dev/null"
+              },
+              "03_mount": {
+                "command": "/bin/mount -a"
+              }
+            }
+          },
+          "download": {
+            "packages": {
+              "yum": {
+                "Minecraft-Overviewer": [],
+                "nginx": [],
+                "git": []
+              }
+            },
+            "files": {
+              "/persistent/overviewer/1.8.jar": {
+                "source": "https://s3.amazonaws.com/Minecraft.Download/versions/1.8/1.8.jar",
+                "mode": "0644",
+                "owner": "root",
+                "group": "root"
+              },
+              "/persistent/overviewer/overviewer.conf": {
+                "source": "https://raw.githubusercontent.com/nonspecialist/minecraft-overviewer/master/overviewer.conf",
+                "mode": "0644",
+                "owner": "root",
+                "group": "root"
+              },
+              "/usr/local/bin/overview": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "#!/bin/bash\n",
+                      "set -ex\n",
+                      "if [ -f /var/run/overviewer.pid ]; then\n",
+                      "  if ps $( cat /var/run/overviewer.pid ) >/dev/null; then\n",
+                      "    exit 0\n",
+                      "  else\n",
+                      "    rm /var/run/overviewer.pid\n",
+                      "  fi\n",
+                      "fi\n",
+                      "\n",
+                      "cleanup () {\n",
+                      "  rm /var/run/overviewer.pid\n",
+                      "}\n",
+                      "\n",
+                      "trap cleanup EXIT\n",
+                      "\n",
+                      "echo $$ > /var/run/overviewer.pid\n",
+                      "\n",
+                      "cd /persistent/backups\n",
+                      "wget --mirror ftp://", { "Ref": "MinecraftServer" }, "/\n",
+                      "cd /persistent/overviewer\n",
+                      "overviewer.py --config=overviewer.conf\n",
+                      "overviewer.py --genpoi --config=overviewer.conf\n"
+                    ]
+                  ]
+                },
+                "mode": "0755",
+                "owner": "root",
+                "group": "root"
+              }
+            },
+            "commands": {
+              "00_mkdir": {
+                "command": "/bin/mkdir -p /persistent/tiles /persistent/backups /persistent/overviewer /persistent/tmp"
+              },
+              "01_git_init": {
+                "cwd": "/persistent/backups",
+                "command": "/usr/bin/git init .",
+                "test": "/usr/bin/test ! -d .git"
+              },
+              "02_crontab": {
+                "command": "( /usr/bin/crontab -l 2>/dev/null | grep -v overview ; echo '*/10 * * * * /usr/local/bin/overview' ) | /usr/bin/crontab"
+              }
+            }
+          },
+          "configure": {
+            "files": {
+              "/etc/nginx/conf.d/overviewer.conf": {
+                "content": "server { root /persistent/tiles; }"
+              },
+              "/etc/wgetrc": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "ftp_user = ", { "Ref": "FTPUser" }, "\n",
+                      "ftp_password = ", { "Ref": "FTPPass" }, "\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "sysvinit": {
+                "nginx": {
+                  "enabled": "true",
+                  "ensureRunning": "true",
+                  "files": "/etc/nginx/conf.d/overviewer.conf"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sdc",
+            "Ebs": {
+              "VolumeSize": "20",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMapping",
+            { "Ref": "AWS::Region" },
+            "hvm"
+          ]
+        },
+        "InstanceType": { "Ref": "InstanceType" },
+        "InstanceMonitoring": "false",
+        "KeyName": { "Ref": "SSHKeyName" },
+        "SecurityGroups": [
+          { "Ref": "OverviewerSecurityGroup" }
+        ],
+        "SpotPrice": { "Ref": "SpotBidPrice" },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "/opt/aws/bin/cfn-init -s ", { "Ref": "AWS::StackName" },
+                " -r OverviewerLaunchConfiguration ",
+                " --region ", { "Ref": "AWS::Region" }, "\n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+    "OverviewerASG": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AvailabilityZones": {
+          "Fn::GetAZs": { "Ref": "AWS::Region" }
+        },
+        "Cooldown": "300",
+        "HealthCheckType": "EC2",
+        "LaunchConfigurationName": { "Ref": "OverviewerLaunchConfiguration" },
+        "MaxSize": "1",
+        "MinSize": "1",
+        "VPCZoneIdentifier": [
+          { "Ref": "SubnetA" },
+          { "Ref": "SubnetB" }
+        ]
+      }
+    }
+
+  }
+}

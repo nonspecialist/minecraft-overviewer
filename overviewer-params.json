@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-c47696a1"
+  },
+  {
+    "ParameterKey": "SSHKeyName",
+    "ParameterValue": "cmp-clabber"
+  },
+  {
+    "ParameterKey": "SubnetA",
+    "ParameterValue": "subnet-6f92801b"
+  },
+  {
+    "ParameterKey": "SubnetB",
+    "ParameterValue": "subnet-5df90138"
+  },
+  {
+    "ParameterKey": "FTPUser",
+    "ParameterValue": "someuser"
+  },
+  {
+    "ParameterKey": "FTPPass",
+    "ParameterValue": "somepass"
+  },
+  {
+    "ParameterKey": "MinecraftServer",
+    "ParameterValue": "somehost"
+  }
+]
