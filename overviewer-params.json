@@ -1,30 +1,38 @@
 [
   {
     "ParameterKey": "VpcId",
-    "ParameterValue": "vpc-c47696a1"
+    "ParameterValue": "vpc-4ce11c29"
   },
   {
     "ParameterKey": "SSHKeyName",
-    "ParameterValue": "cmp-clabber"
+    "ParameterValue": "rea-gaming-ap-southeast-2"
   },
   {
     "ParameterKey": "SubnetA",
-    "ParameterValue": "subnet-6f92801b"
+    "ParameterValue": "subnet-dec801bb"
   },
   {
     "ParameterKey": "SubnetB",
-    "ParameterValue": "subnet-5df90138"
+    "ParameterValue": "subnet-5f7b8c28"
   },
   {
-    "ParameterKey": "FTPUser",
-    "ParameterValue": "someuser"
+    "ParameterKey": "SecretsBucket",
+    "ParameterValue": "secrets.rea-gaming.org"
   },
   {
-    "ParameterKey": "FTPPass",
-    "ParameterValue": "somepass"
+    "ParameterKey": "CredentialFile",
+    "ParameterValue": "mcph.wgetrc"
+  },
+  {
+    "ParameterKey": "DNSDomain",
+    "ParameterValue": "rea-gaming.org."
   },
   {
     "ParameterKey": "MinecraftServer",
-    "ParameterValue": "somehost"
+    "ParameterValue": "current.minecraft.rea-gaming.org"
+  },
+  {
+    "ParameterKey": "MinecraftWorld",
+    "ParameterValue": "oki3"
   }
 ]

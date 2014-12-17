@@ -12,11 +12,11 @@
     },
     "InstanceType": {
       "Type": "String",
-      "Description": "The size of the instance to use",
+      "Description": "The size of the instance to use (note: tile rendering uses much CPU)",
       "AllowedValues": [
-        "c3.large", "c3.xlarge", "r3.large", "r3.xlarge"
+        "c3.large", "c3.xlarge", "c3.2xlarge"
       ],
-      "Default": "c3.large"
+      "Default": "c3.2xlarge"
     },
     "SSHKeyName": {
       "Type": "String",
@@ -27,7 +27,7 @@
       "Description": "How much (max) to pay per instance-hour",
       "AllowedPattern": "^[0-9]+\\.[0-9][0-9]",
       "ConstraintDescription": "Must be a floating-point number, 2 decimal places",
-      "Default": "0.02"
+      "Default": "0.10"
     },
     "SubnetA": {
       "Type": "String",
@@ -41,17 +41,28 @@
       "AllowedPattern": "^subnet-[a-f0-9]{8}$",
       "ConstraintDescription": "Must be a valid subnet ID"
     },
-    "FTPUser": {
+    "SecretsBucket": {
       "Type": "String",
-      "Description": "FTP username for mirroring tiles"
+      "Description": "The S3 bucket containing the credential file"
     },
-    "FTPPass": {
+    "CredentialFile": {
       "Type": "String",
-      "Description": "FTP password for mirroring tiles"
+      "Description": "URL to retrieve the wgetrc credential file from"
     },
     "MinecraftServer": {
       "Type": "String",
-      "Description": "The host to retrieve tiles from"
+      "Description": "The host to retrieve tiles from (must match host name in overviewer.conf)"
+    },
+    "MinecraftWorld": {
+      "Type": "String",
+      "Description": "The world subdirectory to mirror (must match the world name in overviewer.conf)"
+    },
+    "DNSDomain": {
+      "Type": "String",
+      "Description": "The DNS domain that the overviewer is hosted in",
+      "Default": "rea-gaming.org.",
+      "AllowedPattern": "^[a-z]+[a-z0-9-.]*\\.",
+      "ConstraintDescription": "Must be a dot-terminated valid Route53 domain name"
     }
   },
 
@@ -113,6 +124,76 @@
             "ToPort": "80",
             "IpProtocol": "tcp"
           }
+        ]
+      }
+    },
+
+    "OverviewerInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "AccessS3",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        { "Ref": "SecretsBucket" },
+                        "/*"
+                      ]
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        { "Ref": "SecretsBucket" }
+                      ]
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "OverviewerInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          { "Ref": "OverviewerInstanceRole" }
         ]
       }
     },
@@ -207,7 +288,8 @@
                       "echo $$ > /var/run/overviewer.pid\n",
                       "\n",
                       "cd /persistent/backups\n",
-                      "wget --mirror ftp://", { "Ref": "MinecraftServer" }, "/\n",
+                      "wget --mirror ftp://", { "Ref": "MinecraftServer" }, "/" ,
+                        { "Ref": "MinecraftWorld" }, "\n",
                       "cd /persistent/overviewer\n",
                       "overviewer.py --config=overviewer.conf\n",
                       "overviewer.py --genpoi --config=overviewer.conf\n"
@@ -221,7 +303,7 @@
             },
             "commands": {
               "00_mkdir": {
-                "command": "/bin/mkdir -p /persistent/tiles /persistent/backups /persistent/overviewer /persistent/tmp"
+                "command": "/bin/mkdir -p /persistent/tiles /persistent/backups /persistent/overviewer/web-assets /persistent/tmp"
               },
               "01_git_init": {
                 "cwd": "/persistent/backups",
@@ -239,15 +321,18 @@
                 "content": "server { root /persistent/tiles; }"
               },
               "/etc/wgetrc": {
-                "content": {
+                "source": { 
                   "Fn::Join": [
                     "",
                     [
-                      "ftp_user = ", { "Ref": "FTPUser" }, "\n",
-                      "ftp_password = ", { "Ref": "FTPPass" }, "\n"
+                      "https://",
+                      { "Ref": "SecretsBucket" },
+                      ".s3.amazonaws.com/",
+                      { "Ref": "CredentialFile" }
                     ]
                   ]
-                }
+                },
+                "authentication": "secrets-bucket"
               }
             },
             "services": {
@@ -259,6 +344,15 @@
                 }
               }
             }
+          }
+        },
+        "AWS::CloudFormation::Authentication": {
+          "secrets-bucket": {
+            "type": "S3",
+            "roleName": { "Ref": "OverviewerInstanceRole" },
+            "buckets": [
+              { "Ref": "SecretsBucket" }
+            ]
           }
         }
       },
@@ -311,12 +405,58 @@
         "Cooldown": "300",
         "HealthCheckType": "EC2",
         "LaunchConfigurationName": { "Ref": "OverviewerLaunchConfiguration" },
+        "LoadBalancerNames": { "Ref": "OverviewerELB" },
         "MaxSize": "1",
         "MinSize": "1",
         "VPCZoneIdentifier": [
           { "Ref": "SubnetA" },
           { "Ref": "SubnetB" }
         ]
+      }
+    },
+
+    "OverviewerELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Subnets": [
+          { "Ref": "SubnetA" },
+          { "Ref": "SubnetB" }
+        ],
+        "Listeners": [
+          {
+            "InstancePort": "80",
+            "InstanceProtocol": "tcp",
+            "LoadBalancerPort": "80",
+            "Protocol": "HTTP"
+          }
+        ],
+        "CrossZone": "true"
+      }
+    },
+
+    "OverviewerDNSEntry": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName": { "Ref": "DNSDomain" },
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              "overviewer.",
+              { "Ref": "DNSDomain" }
+            ]
+          ]
+        },
+        "ResourceRecords": [
+          {
+            "Fn::GetAtt": [
+              "OverviewerELB",
+              "CanonicalHostedZoneName"
+            ]
+          }
+        ],
+        "TTL": "300",
+        "Type": "CNAME"
       }
     }
 
