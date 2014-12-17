@@ -413,6 +413,13 @@
         "VPCZoneIdentifier": [
           { "Ref": "SubnetA" },
           { "Ref": "SubnetB" }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Minecraft Overviewer",
+            "PropagateAtLaunch": "true"
+          }
         ]
       }
     },
