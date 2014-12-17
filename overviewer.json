@@ -263,19 +263,8 @@
               }
             },
             "commands": {
-              "00_mkfs": {
-                "command": "/sbin/mkfs.ext4 -L overviewer -j /dev/sdc",
-                "test": "/usr/bin/file -sL /dev/sdc | /bin/grep -v ext4"
-              },
-              "01_mkdir": {
-                "command": "/bin/mkdir -p /persistent"
-              },
-              "02_append_mount": {
-                "command": "echo LABEL=overviewer /persistent ext4 defaults 0 0 >>/etc/fstab",
-                "test": "/bin/grep -v overviewer /etc/fstab >/dev/null"
-              },
-              "03_mount": {
-                "command": "/bin/mount -a"
+              "01_ln": {
+                "command": "/bin/ln -s /media/ephemeral0 /persistent"
               }
             }
           },
@@ -328,7 +317,15 @@
                         { "Ref": "MinecraftWorld" }, "\n",
                       "cd /persistent/overviewer\n",
                       "overviewer.py --config=overviewer.conf\n",
-                      "overviewer.py --genpoi --config=overviewer.conf\n"
+                      "overviewer.py --genpoi --config=overviewer.conf\n",
+                      "\n",
+                      "echo Syncing generated tiles to S3...\n",
+                      "/usr/bin/aws --region ", { "Ref": "AWS::Region" },
+                        " s3 sync ",
+                        " --only-show-errors ",
+                        " --storage-class REDUCED_REDUNDANCY ",
+                        " /persistent/tiles/ s3://", { "Ref": "BackupBucket" }, "/\n"
+
                     ]
                   ]
                 },
@@ -348,6 +345,18 @@
               },
               "02_crontab": {
                 "command": "( /usr/bin/crontab -l 2>/dev/null | grep -v overview ; echo '*/10 * * * * /usr/local/bin/overview >> /var/log/overview.log 2>&1' ) | /usr/bin/crontab"
+              },
+              "03_restore_from_s3": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "/usr/bin/aws --region ", { "Ref": "AWS::Region" }, 
+                      " s3 sync s3://", { "Ref": "BackupBucket" }, "/", 
+                      " /persistent/tiles/"
+                    ]
+                  ]
+                }
               }
             }
           },
@@ -396,10 +405,7 @@
         "BlockDeviceMappings": [
           {
             "DeviceName": "/dev/sdc",
-            "Ebs": {
-              "VolumeSize": "20",
-              "VolumeType": "gp2"
-            }
+            "VirtualName": "ephemeral0"
           }
         ],
         "ImageId": {
@@ -423,6 +429,10 @@
               "",
               [
                 "#!/bin/bash\n",
+                "\n",
+                "# Need the latest awscli\n",
+                "yum update -y aws-cli\n",
+                "\n",
                 "/opt/aws/bin/cfn-init -s ", { "Ref": "AWS::StackName" },
                 " -r OverviewerLaunchConfiguration ",
                 " --region ", { "Ref": "AWS::Region" }, "\n"
