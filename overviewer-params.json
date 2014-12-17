@@ -4,6 +4,10 @@
     "ParameterValue": "vpc-4ce11c29"
   },
   {
+    "ParameterKey": "SpotBidPrice",
+    "ParameterValue": "0.50"
+  },
+  {
     "ParameterKey": "SSHKeyName",
     "ParameterValue": "rea-gaming-ap-southeast-2"
   },
