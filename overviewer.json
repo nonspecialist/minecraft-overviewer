@@ -452,9 +452,6 @@
         "Cooldown": "300",
         "HealthCheckType": "EC2",
         "LaunchConfigurationName": { "Ref": "OverviewerLaunchConfiguration" },
-        "LoadBalancerNames": [
-          { "Ref": "OverviewerELB" }
-        ],
         "MaxSize": "1",
         "MinSize": "1",
         "VPCZoneIdentifier": [
@@ -468,76 +465,6 @@
             "PropagateAtLaunch": "true"
           }
         ]
-      }
-    },
-
-    "OverviewerELBSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Inbound HTTP",
-        "VpcId": { "Ref": "VpcId" },
-        "SecurityGroupIngress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": "80",
-            "ToPort": "80",
-            "IpProtocol": "tcp"
-          }
-        ]
-      }
-    },
-
-    "OverviewerELB": {
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-      "Properties": {
-        "Subnets": [
-          { "Ref": "SubnetA" },
-          { "Ref": "SubnetB" }
-        ],
-        "Listeners": [
-          {
-            "InstancePort": "80",
-            "LoadBalancerPort": "80",
-            "Protocol": "HTTP"
-          }
-        ],
-        "CrossZone": "true",
-        "HealthCheck": {
-          "Target": "HTTP:80/",
-          "HealthyThreshold": "2",
-          "UnhealthyThreshold": "5",
-          "Interval": "30",
-          "Timeout": "5"
-        },
-        "SecurityGroups": [
-          { "Ref": "OverviewerELBSecurityGroup" }
-        ]
-      }
-    },
-
-    "OverviewerDNSEntry": {
-      "Type": "AWS::Route53::RecordSet",
-      "Properties": {
-        "HostedZoneName": { "Ref": "DNSDomain" },
-        "Name": {
-          "Fn::Join": [
-            "",
-            [
-              "map.minecraft.",
-              { "Ref": "DNSDomain" }
-            ]
-          ]
-        },
-        "ResourceRecords": [
-          {
-            "Fn::GetAtt": [
-              "OverviewerELB",
-              "CanonicalHostedZoneName"
-            ]
-          }
-        ],
-        "TTL": "300",
-        "Type": "CNAME"
       }
     }
 
