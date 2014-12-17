@@ -458,7 +458,7 @@
           "Fn::Join": [
             "",
             [
-              "overviewer.",
+              "map.minecraft.",
               { "Ref": "DNSDomain" }
             ]
           ]
