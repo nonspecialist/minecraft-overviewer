@@ -405,7 +405,9 @@
         "Cooldown": "300",
         "HealthCheckType": "EC2",
         "LaunchConfigurationName": { "Ref": "OverviewerLaunchConfiguration" },
-        "LoadBalancerNames": { "Ref": "OverviewerELB" },
+        "LoadBalancerNames": [
+          { "Ref": "OverviewerELB" }
+        ],
         "MaxSize": "1",
         "MinSize": "1",
         "VPCZoneIdentifier": [
