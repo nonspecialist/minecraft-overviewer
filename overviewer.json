@@ -49,6 +49,10 @@
       "Type": "String",
       "Description": "URL to retrieve the wgetrc credential file from"
     },
+    "BackupBucket": {
+      "Type": "String",
+      "Description": "The S3 bucket where the rendered tiles will be saved (and restored, on instance creation)"
+    },
     "MinecraftServer": {
       "Type": "String",
       "Description": "The host to retrieve tiles from (must match host name in overviewer.conf)"
@@ -177,6 +181,38 @@
                       [
                         "arn:aws:s3:::",
                         { "Ref": "SecretsBucket" }
+                      ]
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        { "Ref": "BackupBucket" },
+                        "/*"
+                      ]
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        { "Ref": "BackupBucket" }
                       ]
                     ]
                   }

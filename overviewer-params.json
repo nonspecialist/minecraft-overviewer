@@ -28,6 +28,10 @@
     "ParameterValue": "mcph.wgetrc"
   },
   {
+    "ParameterKey": "BackupBucket",
+    "ParameterValue": "map.minecraft.rea-gaming.org"
+  },
+  {
     "ParameterKey": "DNSDomain",
     "ParameterValue": "rea-gaming.org."
   },
