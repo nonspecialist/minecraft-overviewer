@@ -425,12 +425,18 @@
         "Listeners": [
           {
             "InstancePort": "80",
-            "InstanceProtocol": "tcp",
             "LoadBalancerPort": "80",
             "Protocol": "HTTP"
           }
         ],
-        "CrossZone": "true"
+        "CrossZone": "true",
+        "HealthCheck": {
+          "Target": "HTTP:80/",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "5",
+          "Interval": "30",
+          "Timeout": "5"
+        }
       }
     },
 
