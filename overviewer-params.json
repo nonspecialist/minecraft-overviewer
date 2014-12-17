@@ -21,7 +21,7 @@
   },
   {
     "ParameterKey": "SecretsBucket",
-    "ParameterValue": "secrets.rea-gaming.org"
+    "ParameterValue": "rea-gaming-secrets"
   },
   {
     "ParameterKey": "CredentialFile",
