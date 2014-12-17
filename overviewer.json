@@ -373,6 +373,7 @@
             "hvm"
           ]
         },
+        "IamInstanceProfile": { "Ref": "OverviewerInstanceProfile" },
         "InstanceType": { "Ref": "InstanceType" },
         "InstanceMonitoring": "false",
         "KeyName": { "Ref": "SSHKeyName" },
