@@ -425,6 +425,22 @@
       }
     },
 
+    "OverviewerELBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Inbound HTTP",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "ToPort": "80",
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+
     "OverviewerELB": {
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties": {
@@ -446,7 +462,10 @@
           "UnhealthyThreshold": "5",
           "Interval": "30",
           "Timeout": "5"
-        }
+        },
+        "SecurityGroups": [
+          { "Ref": "OverviewerELBSecurityGroup" }
+        ]
       }
     },
 
