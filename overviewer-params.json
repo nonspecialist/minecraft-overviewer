@@ -32,6 +32,10 @@
     "ParameterValue": "map.minecraft.rea-gaming.org"
   },
   {
+    "ParameterKey": "BackupBucket",
+    "ParameterValue": "backups.minecraft.rea-gaming.org"
+  },
+  {
     "ParameterKey": "DNSDomain",
     "ParameterValue": "rea-gaming.org."
   },

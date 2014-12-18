@@ -53,6 +53,10 @@
       "Type": "String",
       "Description": "The S3 bucket where the rendered tiles will be saved (and restored, on instance creation)"
     },
+    "BackupBucket": {
+      "Type": "String",
+      "Description": "The S3 bucket where the downloaded world will be saved (and restored, on instance creation)"
+    },
     "MinecraftServer": {
       "Type": "String",
       "Description": "The host to retrieve tiles from (must match host name in overviewer.conf)"
@@ -344,9 +348,24 @@
                       "\n",
                       "echo $$ > /var/run/overviewer.pid\n",
                       "\n",
+                      "#\n",
+                      "# Back up from the server\n",
+                      "#\n",
                       "cd /persistent/backups\n",
                       "wget --mirror ftp://", { "Ref": "MinecraftServer" }, "/" ,
                         { "Ref": "MinecraftWorld" }, "\n",
+                      "echo Syncing world backups to S3...\n",
+                      "/usr/bin/aws --region ", { "Ref": "AWS::Region" },
+                        " s3 sync ",
+                        " --only-show-errors ",
+                        " --storage-class REDUCED_REDUNDANCY ",
+                        " /persistent/backups/ s3://",
+                          { "Ref": "BackupBucket" }, "/", { "Ref": "MinecraftServer" },
+                          "/", { "Ref": "MinecraftWorld" }, "\n",
+                      "\n",
+                      "#\n",
+                      "# Generate the map\n",
+                      "#\n",
                       "cd /persistent/overviewer\n",
                       "overviewer.py --config=overviewer.conf\n",
                       "overviewer.py --genpoi --config=overviewer.conf\n",
