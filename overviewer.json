@@ -394,10 +394,7 @@
                 "command": "/usr/bin/git init .",
                 "test": "/usr/bin/test ! -d .git"
               },
-              "02_crontab": {
-                "command": "( /usr/bin/crontab -l 2>/dev/null | grep -v overview ; echo '*/10 * * * * /usr/local/bin/overview >> /var/log/overview.log 2>&1' ) | /usr/bin/crontab"
-              },
-              "03_restore_from_s3": {
+              "03_restore_tiles_from_s3": {
                 "command": {
                   "Fn::Join": [
                     "",
@@ -405,6 +402,20 @@
                       "/usr/bin/aws --region ", { "Ref": "AWS::Region" }, 
                       " s3 sync s3://", { "Ref": "TileBucket" }, "/", 
                       " /persistent/tiles/"
+                    ]
+                  ]
+                }
+              },
+              "03_restore_backups_from_s3": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "/usr/bin/aws --region ", { "Ref": "AWS::Region" }, 
+                      " s3 sync s3://", { "Ref": "BackupBucket" }, "/", 
+                      { "Ref": "MinecraftServer" }, "/",
+                      { "Ref": "MinecraftWorld" }, "/",
+                      " /persistent/backups/"
                     ]
                   ]
                 }
@@ -429,6 +440,11 @@
                   ]
                 },
                 "authentication": "secrets-bucket"
+              }
+            },
+            "commands": {
+              "01_crontab": {
+                "command": "( /usr/bin/crontab -l 2>/dev/null | grep -v overview ; echo '*/10 * * * * /usr/local/bin/overview >> /var/log/overview.log 2>&1' ) | /usr/bin/crontab"
               }
             },
             "services": {
