@@ -49,7 +49,7 @@
       "Type": "String",
       "Description": "URL to retrieve the wgetrc credential file from"
     },
-    "BackupBucket": {
+    "TileBucket": {
       "Type": "String",
       "Description": "The S3 bucket where the rendered tiles will be saved (and restored, on instance creation)"
     },
@@ -196,6 +196,38 @@
                       "",
                       [
                         "arn:aws:s3:::",
+                        { "Ref": "TileBucket" },
+                        "/*"
+                      ]
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        { "Ref": "TileBucket" }
+                      ]
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
                         { "Ref": "BackupBucket" },
                         "/*"
                       ]
@@ -324,7 +356,7 @@
                         " s3 sync ",
                         " --only-show-errors ",
                         " --storage-class REDUCED_REDUNDANCY ",
-                        " /persistent/tiles/ s3://", { "Ref": "BackupBucket" }, "/\n"
+                        " /persistent/tiles/ s3://", { "Ref": "TileBucket" }, "/\n"
 
                     ]
                   ]
@@ -352,7 +384,7 @@
                     "",
                     [
                       "/usr/bin/aws --region ", { "Ref": "AWS::Region" }, 
-                      " s3 sync s3://", { "Ref": "BackupBucket" }, "/", 
+                      " s3 sync s3://", { "Ref": "TileBucket" }, "/", 
                       " /persistent/tiles/"
                     ]
                   ]

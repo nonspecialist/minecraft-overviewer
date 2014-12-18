@@ -28,7 +28,7 @@
     "ParameterValue": "mcph.wgetrc"
   },
   {
-    "ParameterKey": "BackupBucket",
+    "ParameterKey": "TileBucket",
     "ParameterValue": "map.minecraft.rea-gaming.org"
   },
   {
