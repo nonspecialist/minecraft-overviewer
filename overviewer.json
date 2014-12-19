@@ -354,14 +354,6 @@
                       "cd /persistent/backups\n",
                       "wget --mirror ftp://", { "Ref": "MinecraftServer" }, "/" ,
                         { "Ref": "MinecraftWorld" }, "\n",
-                      "echo Syncing world backups to S3...\n",
-                      "/usr/bin/aws --region ", { "Ref": "AWS::Region" },
-                        " s3 sync ",
-                        " --only-show-errors ",
-                        " --storage-class REDUCED_REDUNDANCY ",
-                        " /persistent/backups/ s3://",
-                          { "Ref": "BackupBucket" }, "/", { "Ref": "MinecraftServer" },
-                          "/", { "Ref": "MinecraftWorld" }, "/\n",
                       "\n",
                       "#\n",
                       "# Generate the map\n",
@@ -375,7 +367,16 @@
                         " s3 sync ",
                         " --only-show-errors ",
                         " --storage-class REDUCED_REDUNDANCY ",
-                        " /persistent/tiles/ s3://", { "Ref": "TileBucket" }, "/\n"
+                        " /persistent/tiles/ s3://", { "Ref": "TileBucket" }, "/\n",
+                      "\n",
+                      "echo Syncing world backups to S3...\n",
+                      "/usr/bin/aws --region ", { "Ref": "AWS::Region" },
+                        " s3 sync ",
+                        " --only-show-errors ",
+                        " --storage-class REDUCED_REDUNDANCY ",
+                        " /persistent/backups/ s3://",
+                          { "Ref": "BackupBucket" }, "/", { "Ref": "MinecraftServer" },
+                          "/", { "Ref": "MinecraftWorld" }, "/\n"
 
                     ]
                   ]
