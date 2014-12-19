@@ -361,7 +361,7 @@
                         " --storage-class REDUCED_REDUNDANCY ",
                         " /persistent/backups/ s3://",
                           { "Ref": "BackupBucket" }, "/", { "Ref": "MinecraftServer" },
-                          "/", { "Ref": "MinecraftWorld" }, "\n",
+                          "/", { "Ref": "MinecraftWorld" }, "/\n",
                       "\n",
                       "#\n",
                       "# Generate the map\n",
