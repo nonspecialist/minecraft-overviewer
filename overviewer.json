@@ -384,6 +384,25 @@
                 "mode": "0755",
                 "owner": "root",
                 "group": "root"
+              },
+              "/etc/logrotate.d/overview": {
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/overview.log {",
+                      "  missingok",
+                      "  notifempty",
+                      "  daily",
+                      "  rotate 7",
+                      "  compress",
+                      "}"
+                    ]
+                  ]
+                }
+                "mode": "0644",
+                "owner": "root",
+                "group": "root"
               }
             },
             "commands": {
