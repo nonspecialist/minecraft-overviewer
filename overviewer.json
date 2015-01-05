@@ -309,7 +309,8 @@
               "yum": {
                 "Minecraft-Overviewer": [],
                 "nginx": [],
-                "git": []
+                "git": [],
+                "htop": []
               }
             },
             "files": {
