@@ -399,7 +399,7 @@
                       "}"
                     ]
                   ]
-                }
+                },
                 "mode": "0644",
                 "owner": "root",
                 "group": "root"
@@ -464,7 +464,7 @@
             },
             "commands": {
               "01_crontab": {
-                "command": "( /usr/bin/crontab -l 2>/dev/null | grep -v overview ; echo '*/10 * * * * /usr/local/bin/overview >> /var/log/overview.log 2>&1' ) | /usr/bin/crontab"
+                "command": "( /usr/bin/crontab -l 2>/dev/null | grep -v overview ; echo '0 * * * * /usr/local/bin/overview >> /var/log/overview.log 2>&1' ) | /usr/bin/crontab"
               }
             },
             "services": {
