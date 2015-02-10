@@ -14,9 +14,9 @@
       "Type": "String",
       "Description": "The size of the instance to use (note: tile rendering uses much CPU)",
       "AllowedValues": [
-        "c3.large", "c3.xlarge", "c3.2xlarge"
+        "c3.large", "c3.xlarge", "c3.2xlarge", "c4.2xlarge"
       ],
-      "Default": "c3.2xlarge"
+      "Default": "c4.2xlarge"
     },
     "SSHKeyName": {
       "Type": "String",
@@ -45,7 +45,7 @@
       "Type": "String",
       "Description": "The S3 bucket containing the credential file"
     },
-    "CredentialFile": {
+    "SSHKeyFile": {
       "Type": "String",
       "Description": "URL to retrieve the wgetrc credential file from"
     },
@@ -327,6 +327,19 @@
                 "owner": "root",
                 "group": "root"
               },
+              "/root/.ssh/config": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "Host mcover\n",
+                      "    HostName 172.31.0.15\n",
+                      "    User mcover\n",
+                      "    IdentityFile /root/.ssh/mcover-key.pem\n"
+                    ]
+                  ]
+                }
+              },
               "/usr/local/bin/overview": {
                 "content": {
                   "Fn::Join": [
@@ -354,8 +367,12 @@
                       "# Back up from the server\n",
                       "#\n",
                       "cd /persistent/backups\n",
-                      "wget --mirror ftp://", { "Ref": "MinecraftServer" }, "/" ,
-                        { "Ref": "MinecraftWorld" }, "\n",
+                      "if [ ! -d ", { "Ref": "MinecraftServer" }, " ]; then\n",
+                      "    mkdir ", { "Ref": "MinecraftServer" }, "\n",
+                      "fi\n",
+                      "rsync -av --rsh=ssh mcover:/minecraft/survival/oki3 /persistent/backups/", { "Ref": "MinecraftServer" }, "/\n",
+                      "rsync -av --rsh=ssh mcover:/minecraft/survival/oki3_nether /persistent/backups/", { "Ref": "MinecraftServer" }, "/\n",
+                      "rsync -av --rsh=ssh mcover:/minecraft/survival/oki3_the_end /persistent/backups/", { "Ref": "MinecraftServer" }, "/\n",
                       "\n",
                       "#\n",
                       "# Generate the map\n",
@@ -451,7 +468,7 @@
               "/etc/nginx/conf.d/overviewer.conf": {
                 "content": "server { root /persistent/tiles; }"
               },
-              "/etc/wgetrc": {
+              "/root/.ssh/mcover-key.pem": {
                 "source": { 
                   "Fn::Join": [
                     "",
@@ -459,7 +476,7 @@
                       "https://",
                       { "Ref": "SecretsBucket" },
                       ".s3.amazonaws.com/",
-                      { "Ref": "CredentialFile" }
+                      { "Ref": "SSHKeyFile" }
                     ]
                   ]
                 },
