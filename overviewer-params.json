@@ -41,10 +41,6 @@
   },
   {
     "ParameterKey": "MinecraftServer",
-    "ParameterValue": "current.minecraft.rea-gaming.org"
-  },
-  {
-    "ParameterKey": "MinecraftWorld",
-    "ParameterValue": "oki3"
+    "ParameterValue": "vanilla.minecraft.rea-gaming.org"
   }
 ]

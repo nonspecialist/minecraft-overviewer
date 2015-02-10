@@ -61,10 +61,6 @@
       "Type": "String",
       "Description": "The host to retrieve tiles from (must match host name in overviewer.conf)"
     },
-    "MinecraftWorld": {
-      "Type": "String",
-      "Description": "The world subdirectory to mirror (must match the world name in overviewer.conf)"
-    },
     "DNSDomain": {
       "Type": "String",
       "Description": "The DNS domain that the overviewer is hosted in",
