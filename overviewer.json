@@ -397,7 +397,7 @@
                         " --storage-class REDUCED_REDUNDANCY ",
                         " /persistent/backups/ s3://",
                           { "Ref": "BackupBucket" }, "/", { "Ref": "MinecraftServer" },
-                          "/", { "Ref": "MinecraftWorld" }, "/\n"
+                          "/\n"
 
                     ]
                   ]
@@ -455,7 +455,6 @@
                       "/usr/bin/aws --region ", { "Ref": "AWS::Region" }, 
                       " s3 sync s3://", { "Ref": "BackupBucket" }, "/", 
                       { "Ref": "MinecraftServer" }, "/",
-                      { "Ref": "MinecraftWorld" }, "/",
                       " /persistent/backups/"
                     ]
                   ]
