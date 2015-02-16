@@ -14,9 +14,9 @@
       "Type": "String",
       "Description": "The size of the instance to use (note: tile rendering uses much CPU)",
       "AllowedValues": [
-        "c3.large", "c3.xlarge", "c3.2xlarge", "c4.2xlarge"
+        "c3.large", "c3.xlarge", "c3.2xlarge"
       ],
-      "Default": "c4.2xlarge"
+      "Default": "c3.2xlarge"
     },
     "SSHKeyName": {
       "Type": "String",
@@ -298,6 +298,9 @@
             "commands": {
               "01_ln": {
                 "command": "/bin/ln -s /media/ephemeral0 /persistent"
+              },
+              "02_mkdir": {
+                "command": "/bin/mkdir /persistent/overviewer"
               }
             }
           },
