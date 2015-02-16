@@ -24,10 +24,6 @@
     "ParameterValue": "rea-gaming-secrets"
   },
   {
-    "ParameterKey": "CredentialFile",
-    "ParameterValue": "mcph.wgetrc"
-  },
-  {
     "ParameterKey": "TileBucket",
     "ParameterValue": "map.minecraft.rea-gaming.org"
   },
@@ -42,5 +38,9 @@
   {
     "ParameterKey": "MinecraftServer",
     "ParameterValue": "vanilla.minecraft.rea-gaming.org"
+  },
+  {
+    "ParameterKey": "SSHKeyFile",
+    "ParameterValue": "mcover-key"
   }
 ]
