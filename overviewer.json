@@ -267,6 +267,19 @@
       }
     },
 
+    "OverviewerMapRenderAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "Overviewer",
+        "MetricName": "MapRenderedEvent",
+        "Period": "7200",
+        "Statistic": "SampleCount",
+        "Threshold": "1",
+        "EvaluationPeriods": "1",
+        "ComparisonOperator": "LessThanThreshold"
+      }
+    },
+
     "OverviewerLaunchConfiguration": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Metadata": {
@@ -398,8 +411,10 @@
                         " --storage-class REDUCED_REDUNDANCY ",
                         " /persistent/backups/ s3://",
                           { "Ref": "BackupBucket" }, "/", { "Ref": "MinecraftServer" },
-                          "/\n"
-
+                          "/\n",
+                      "\n",
+                      "# Notify CloudWatch that we've made a map\n",
+                      "/usr/bin/aws cloudwatch put-metric-data --namespace Overviewer --metric-name MapRenderedEvent --value 1\n"
                     ]
                   ]
                 },
