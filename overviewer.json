@@ -258,10 +258,10 @@
       "Properties": {
         "Namespace": "Overviewer",
         "MetricName": "MapRenderedEvent",
-        "Period": "7200",
+        "Period": "3600",
         "Statistic": "SampleCount",
         "Threshold": "1",
-        "EvaluationPeriods": "1",
+        "EvaluationPeriods": "2",
         "ComparisonOperator": "LessThanThreshold"
       }
     },
