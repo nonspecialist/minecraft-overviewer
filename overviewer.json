@@ -67,6 +67,12 @@
       "Default": "rea-gaming.org.",
       "AllowedPattern": "^[a-z]+[a-z0-9-.]*\\.",
       "ConstraintDescription": "Must be a dot-terminated valid Route53 domain name"
+    },
+    "AlarmEmailAddress": {
+      "Type": "String",
+      "Description": "An email address to send alarms to when the map render has problems",
+      "AllowedPattern": "^\\S+@\\S+\\.\\S+",
+      "ConstraintDescription": "Must be a valid email address"
     }
   },
 
@@ -253,16 +259,33 @@
       }
     },
 
+    "OverviewerNotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Endpoint": { "Ref": "AlarmEmailAddress" },
+            "Protocol": "email"
+          }
+        ]
+      }
+    },
+
     "OverviewerMapRenderAlarm": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
+        "AlarmDescription": "Send a notification if the map hasn't updated for 2 hours",
         "Namespace": "Overviewer",
         "MetricName": "MapRenderedEvent",
         "Period": "3600",
         "Statistic": "SampleCount",
         "Threshold": "1",
         "EvaluationPeriods": "2",
-        "ComparisonOperator": "LessThanThreshold"
+        "ComparisonOperator": "LessThanThreshold",
+        "ActionsEnabled": "true",
+        "AlarmActions": [
+          { "Ref": "OverviewerNotificationTopic" }
+        ]
       }
     },
 

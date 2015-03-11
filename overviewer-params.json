@@ -42,5 +42,13 @@
   {
     "ParameterKey": "SSHKeyFile",
     "ParameterValue": "mcover-key"
+  },
+  {
+    "ParameterKey": "AlarmEmailAddress",
+    "ParameterValue": "colin.panisset@rea-group.com"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "c3.xlarge"
   }
 ]
