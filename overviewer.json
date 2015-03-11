@@ -162,11 +162,7 @@
                   "Resource": {
                     "Fn::Join": [
                       "",
-                      [
-                        "arn:aws:s3:::",
-                        { "Ref": "SecretsBucket" },
-                        "/*"
-                      ]
+                      [ "arn:aws:s3:::", { "Ref": "SecretsBucket" }, "/*" ]
                     ]
                   }
                 },
@@ -178,10 +174,7 @@
                   "Resource": {
                     "Fn::Join": [
                       "",
-                      [
-                        "arn:aws:s3:::",
-                        { "Ref": "SecretsBucket" }
-                      ]
+                      [ "arn:aws:s3:::", { "Ref": "SecretsBucket" } ]
                     ]
                   }
                 },
@@ -195,11 +188,7 @@
                   "Resource": {
                     "Fn::Join": [
                       "",
-                      [
-                        "arn:aws:s3:::",
-                        { "Ref": "TileBucket" },
-                        "/*"
-                      ]
+                      [ "arn:aws:s3:::", { "Ref": "TileBucket" }, "/*" ]
                     ]
                   }
                 },
@@ -211,10 +200,7 @@
                   "Resource": {
                     "Fn::Join": [
                       "",
-                      [
-                        "arn:aws:s3:::",
-                        { "Ref": "TileBucket" }
-                      ]
+                      [ "arn:aws:s3:::", { "Ref": "TileBucket" } ]
                     ]
                   }
                 },
@@ -227,11 +213,7 @@
                   "Resource": {
                     "Fn::Join": [
                       "",
-                      [
-                        "arn:aws:s3:::",
-                        { "Ref": "BackupBucket" },
-                        "/*"
-                      ]
+                      [ "arn:aws:s3:::", { "Ref": "BackupBucket" }, "/*" ]
                     ]
                   }
                 },
@@ -243,12 +225,16 @@
                   "Resource": {
                     "Fn::Join": [
                       "",
-                      [
-                        "arn:aws:s3:::",
-                        { "Ref": "BackupBucket" }
-                      ]
+                      [ "arn:aws:s3:::", { "Ref": "BackupBucket" } ]
                     ]
                   }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudwatch:PutMetricData"
+                  ],
+                  "Resource": "*"
                 }
               ]
             }
@@ -414,6 +400,7 @@
                           "/\n",
                       "\n",
                       "# Notify CloudWatch that we've made a map\n",
+                      "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                       "/usr/bin/aws cloudwatch put-metric-data --namespace Overviewer --metric-name MapRenderedEvent --value 1\n"
                     ]
                   ]
