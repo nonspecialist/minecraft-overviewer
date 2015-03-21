@@ -285,6 +285,12 @@
         "ActionsEnabled": "true",
         "AlarmActions": [
           { "Ref": "OverviewerNotificationTopic" }
+        ],
+        "OKActions": [
+          { "Ref": "OverviewerNotificationTopic" }
+        ],
+        "InsufficientDataActions": [
+          { "Ref": "OverviewerNotificationTopic" }
         ]
       }
     },
