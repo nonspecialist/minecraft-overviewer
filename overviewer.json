@@ -360,7 +360,7 @@
                     "",
                     [
                       "Host mcover\n",
-                      "    HostName 172.31.0.15\n",
+                      "    HostName vanilla-internal.minecraft.rea-gaming.org\n",
                       "    User mcover\n",
                       "    IdentityFile /root/.ssh/mcover-key.pem\n",
                       "    UserKnownHostsFile /dev/null\n",
