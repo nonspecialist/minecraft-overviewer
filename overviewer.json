@@ -73,6 +73,11 @@
       "Description": "An email address to send alarms to when the map render has problems",
       "AllowedPattern": "^\\S+@\\S+\\.\\S+",
       "ConstraintDescription": "Must be a valid email address"
+    },
+    "ManagementSSHOrigin": {
+      "Type": "String",
+      "Description": "The IP range to permit SSH logins from",
+      "Default": "203.17.253.249/32"
     }
   },
 
@@ -117,13 +122,13 @@
         "VpcId": { "Ref": "VpcId" },
         "SecurityGroupIngress": [
           {
-            "CidrIp": "0.0.0.0/0",
+            "CidrIp": { "Ref": "ManagementSSHOrigin" },
             "FromPort": "-1",
             "ToPort": "-1",
             "IpProtocol": "icmp"
           },
           {
-            "CidrIp": "0.0.0.0/0",
+            "CidrIp": { "Ref": "ManagementSSHOrigin" },
             "FromPort": "22",
             "ToPort": "22",
             "IpProtocol": "tcp"
